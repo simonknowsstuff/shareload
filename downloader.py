@@ -6,20 +6,22 @@ CURRENT_DIR = os.path.dirname(__file__)
 backgrounds = {}
 
 def dl_file(dl_info):
+    downloads_folder = os.path.join(os.getenv('USERPROFILE', os.getenv('HOME')), 'Downloads')
     try:
-        headers = _continue_download(dl_info['filename'])
+        os.makedirs(downloads_folder, exist_ok=True)  # Create folder, ignore if exists
+    except:
+        print('Could not create / find Downloads directory. Does the file have permissions to read the directory?')
+        return
+    final_name = f'{downloads_folder}/{dl_info['filename']}'
+    
+    try:
+        headers = _continue_download(final_name)
         response = requests.get(dl_info['src'], stream=True, headers=headers)
         FULL_SIZE = int(response.headers['Content-Length'])
     except:
         print('Could not get content length. File may already be downloaded.')
         return
     
-    downloads_folder = os.path.join(os.getenv('USERPROFILE', os.getenv('HOME')), 'Downloads')
-    try:
-        os.makedirs(downloads_folder, exist_ok=True)  # Create folder, ignore if exists
-    except OSError as e:
-        print(f"Error creating Downloads folder: {e}")
-    final_name = f'{downloads_folder}/{dl_info['filename']}'
 
     downloaded_bytes = 0
     with open(final_name, mode='ab+') as f:
