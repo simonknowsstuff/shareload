@@ -1,7 +1,8 @@
 import requests
-import os.path
+import os
 
 CHUNK_SIZE = 10 * 1024 # 10 MB is default
+CURRENT_DIR = os.path.dirname(__file__)
 backgrounds = {}
 
 def dl_file(dl_info):
@@ -13,8 +14,15 @@ def dl_file(dl_info):
         print('Could not get content length. File may already be downloaded.')
         return
     
+    downloads_folder = os.path.join(os.getenv('USERPROFILE', os.getenv('HOME')), 'Downloads')
+    try:
+        os.makedirs(downloads_folder, exist_ok=True)  # Create folder, ignore if exists
+    except OSError as e:
+        print(f"Error creating Downloads folder: {e}")
+    final_name = f'{downloads_folder}/{dl_info['filename']}'
+
     downloaded_bytes = 0
-    with open(dl_info['filename'], mode='ab+') as f:
+    with open(final_name, mode='ab+') as f:
         backgrounds[dl_info['id']] = [downloaded_bytes, FULL_SIZE] # Add the current download to background: (bytes, full size)
 
         for chunk in response.iter_content(CHUNK_SIZE):
@@ -23,7 +31,7 @@ def dl_file(dl_info):
                 f.write(chunk)
                 backgrounds[dl_info['id']] = [downloaded_bytes, FULL_SIZE] # Update background task
 
-    print(dl_info['filename'], 'downloaded!')
+    print(dl_info['filename'], 'saved to', final_name)
     return
 
 def _continue_download(filename):

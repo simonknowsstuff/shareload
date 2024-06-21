@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import time
 import downloader
 import threading
@@ -32,7 +32,9 @@ def download_status():
         dl_id = int(request.args['id'])
         if dl_id in downloader.backgrounds:
             info = downloader.backgrounds[dl_id]
-            return f'{info[0]}:{info[1]}', 200
+            
+            resp = {'downloaded': info[0], 'fullSize': info[1]}
+            return jsonify(resp), 200
         return 'Item not found!', 400
 
 if __name__ == '__main__':
